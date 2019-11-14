@@ -177,3 +177,4 @@ defaultTypeScale =
             letter_spacing = -1.5
         }
     }
+

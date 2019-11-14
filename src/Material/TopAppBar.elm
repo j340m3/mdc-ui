@@ -3,6 +3,7 @@ module Material.TopAppBar exposing (Anatomy(..), Background(..), Bar(..), BarHei
 import Element exposing (..)
 import Element.Font as Font
 import Element.Background as Background
+import Element.Border as Border
 import Html exposing (Html)
 import Internal.Icon exposing (Icon)
 import Internal.Image exposing (Image)
@@ -162,23 +163,26 @@ view style appbar =
         height_len =
             getHeight appbar
     in
-    row
-        [ width fill
-        , height <| px height_len
-        , padding <| 16
-        , Background.color style.color.primary
-        ]
-        [viewNavigation style (getBlankAnatomy appbar).navigation
-        , viewTitle style (getBlankAnatomy appbar).title
-        , viewActions style (getBlankAnatomy appbar).actions (getBlankAnatomy appbar).overflow]
+        row
+            [ width fill
+            , height <| px height_len
+            , padding <| 16
+            , Background.color style.color.primary
+            , Border.shadow {offset = (0,0),size = 1, blur = 4, color = rgb 0 0 0}
+            ]
+            [viewNavigation style (getBlankAnatomy appbar).navigation
+            , viewTitle style (getBlankAnatomy appbar).title
+            , viewActions style (getBlankAnatomy appbar).actions (getBlankAnatomy appbar).overflow]
 
 viewNavigation : Style -> Maybe Navigation -> Element m
 viewNavigation style mb_nav =
     case mb_nav of
         Nothing -> 
             el 
-                [height <| px 24,
-                width <| px 24]
+                [
+                    height <| px 24,
+                    width <| px 24
+                ]
                 Element.none
         Just Menu -> 
             el
@@ -224,3 +228,10 @@ viewActions style icons overflow =
     row
         [Font.color style.color.on_primary]
         <| List.map Internal.Icon.view icons
+
+fixedHeight h = 
+    height
+        (fill
+            |> maximum h
+            |> minimum h
+        )

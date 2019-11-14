@@ -1,9 +1,9 @@
 module Material.AppBar exposing (AppBar(..), view)
 
-import Element exposing (..)
+import Element exposing (Element, column, width, fill, el)
 import Material.BottomAppBar as BottomAppBar exposing (BottomAppBar)
 import Material.TopAppBar as TopAppBar exposing (TopAppBar)
-import Material.Theme exposing (..)
+import Material.Theme exposing (Style)
 
 
 type AppBar
@@ -16,11 +16,9 @@ view : Style -> AppBar -> Element m -> Element m
 view style bar body =
     case bar of
         TopOnly top ->
-            column
+            el
                 [width fill]
-                [ TopAppBar.view style top
-                , body
-                ]
+                <| TopAppBar.view style top
 
         BottomOnly bottom ->
             column

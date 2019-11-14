@@ -1,18 +1,21 @@
 module Main exposing (..)
 
-import Material.TopAppBar as TopAppBar exposing (..)
-import Material
-import Material.Theme exposing (..)
-import Material.AppBar as AppBar
+import Browser exposing (Document, document)
 import Html exposing (Html)
 import Html.Attributes
-import Browser exposing (Document, document)
+import Material
+import Material.AppBar as AppBar
+import Material.Theme exposing (..)
+import Material.TopAppBar as TopAppBar exposing (..)
+import Browser.Dom exposing (getViewport, Viewport)
+
 
 type alias Model =
-    {material: Material.Model}
+    { material : Material.Model }
 
-type Msg = 
-    Noop
+
+type Msg
+    = MaterialMsg Material.Msg
 
 
 main : Program {} Model Msg
@@ -23,39 +26,47 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+
+init : {} -> ( Model, Cmd Msg )
+init flags =
+    let
+        (material, effect) = Material.init
+    in
     
-init : {} -> (Model, Cmd Msg)
-init flags = 
-    ({material = {bar = AppBar.TopOnly <| TopAppBar.create 
-                (TopAppBar.Anatomy {
-                    actions = []
-                    , background = TopAppBar.Color (RGB 255 255 255)
-                    , bar = Height TopAppBar.Regular
-                    , navigation = Just Menu
-                    , overflow = False
-                    , title = Title "Hello World"
-                })
-                (TopAppBar.Behavior {
-                    elevation = Same,
-                    scrolling = Stay
-                })
-        , style = Material.Theme.defaultStyle}}, Cmd.none)
+    ( { material =
+            material
+      }
+    , Cmd.map MaterialMsg effect 
+    )
+
 
 view : Model -> Document Msg
 view model =
-    {
-        title = "bla",
-        body = [Html.node "link" [ Html.Attributes.href "https://fonts.googleapis.com/css?family=Roboto", Html.Attributes.rel "stylesheet" ] []
-            , Material.view model.material]
+    { title = "bla"
+    , body =
+        [ Html.node "link" [ Html.Attributes.href "https://fonts.googleapis.com/css?family=Roboto", Html.Attributes.rel "stylesheet" ] []
+        , Html.node "meta" [ 
+            Html.Attributes.attribute "name" "viewport",
+            Html.Attributes.attribute "content" "user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi"
+        ]
+        []
+        , Material.view model.material
+        ]
     }
-    
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Noop ->
-            ( model, Cmd.none )
+        MaterialMsg msg_ -> 
+            let 
+                (material, effect) = 
+                    Material.update msg_ model.material
+            in
+                ({model | material = material}, Cmd.map MaterialMsg effect)
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.map MaterialMsg (Material.subscriptions model.material)
