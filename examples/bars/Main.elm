@@ -19,7 +19,7 @@ type Msg
 
 
 main : Program {} Model Msg
-main =
+main = 
     document
         { init = init
         , view = view
@@ -31,6 +31,7 @@ main =
 init : {} -> ( Model, Cmd Msg )
 init flags =
     let
+
         (material, effect) = Material.init
     in
     
@@ -51,7 +52,7 @@ view model =
             Html.Attributes.attribute "content" "user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi"
         ]
         []
-        , Material.view model.material
+        , Html.map MaterialMsg <| Material.view model.material
         ]
     }
 

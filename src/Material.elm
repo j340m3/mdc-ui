@@ -1,62 +1,93 @@
-module Material exposing (Model, view, subscriptions, update, Msg, init)
+module Material exposing (Model, Msg, init, subscriptions, update, view)
 
-import Element exposing (Device, layout, column, width, fill, Element, el, padding, text, scrollbars)
+import Browser.Dom exposing (Viewport, getViewport)
 import Browser.Events exposing (onResize)
-import Browser.Dom exposing (getViewport, Viewport)
-import Material.AppBar as AppBar
-import Material.TopAppBar as TopAppBar exposing (..)
-import Material.Theme
-import Task
+import Element exposing (Device, Element, clip,paddingEach, column, none, px, el, fill, height, layout, padding, scrollbars, text, width)
 import Html exposing (Html)
-import Material.Theme exposing (..)
+import Material.AppBar as AppBar
+import Material.Theme
+import Material.TopAppBar as TopAppBar exposing (..)
+import Material.BottomAppBar as BottomAppBar
+import Task
 
-type alias Model = 
-    {bar : AppBar.AppBar,
-    style : Material.Theme.Style,
-    device : Device}
+
+type alias Model =
+    { bar : AppBar.AppBar
+    , style : Material.Theme.Style
+    , device : Device
+    }
+
 
 type Msg
     = OnResize Int Int
     | DeviceClassified Device
     | InitialViewport Viewport
+    | AppBar AppBar.Msg
 
 
-view : Model -> Html m
+view : Model -> Html Msg
 view model =
-    layout [] <|
+    let
+        resulting =
+            viewBody
+    in
+    layout [Element.mapAttribute AppBar <| Element.inFront (AppBar.view model.style model.bar)] <|
+        el [paddingEach (AppBar.padding model.bar)] <|
         column
-            [width fill]
-            [AppBar.view model.style model.bar (column [][]), 
-            el [scrollbars]
-            viewBody]
+            []
+            [ 
+                
+                el [] viewBody
 
-viewBody : Element m 
-viewBody = 
-    el 
-        [padding 16]
-        <| text mytext
+            --             el [
+            -- --                scrollbars
+            --                     clip
+            --                 ]
+            --             viewBody
+            ]
 
-mytext = String.repeat 10 "Hello \n"
+
+viewBody : Element m
+viewBody =
+    el
+        [ scrollbars
+        , padding 16
+        ]
+    <|
+        text mytext
+
+
+mytext =
+    String.repeat 1000 "Hello \n"
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        OnResize width height-> 
-            update 
-                (DeviceClassified (Element.classifyDevice { width = width, height = height }) )
+        OnResize width height ->
+            update
+                (DeviceClassified (Element.classifyDevice { width = width, height = height }))
                 model
+
         DeviceClassified device ->
             ( { model | device = device }
             , Cmd.none
             )
+
         InitialViewport viewport ->
             let
-                width = round viewport.viewport.width
-                height = round viewport.viewport.height
+                width =
+                    round viewport.viewport.width
+
+                height =
+                    round viewport.viewport.height
             in
-                update 
-                    (DeviceClassified (Element.classifyDevice { width = width, height = height }) )
-                    model
+            update
+                (DeviceClassified (Element.classifyDevice { width = width, height = height }))
+                model
+        AppBar msg_ ->
+            (model, Cmd.none)
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -64,36 +95,50 @@ subscriptions model =
         \width height ->
             DeviceClassified (Element.classifyDevice { width = width, height = height })
 
-init : (Model, Cmd Msg)
-init = 
-   ( 
-    { bar =
-        AppBar.TopOnly <|
-            TopAppBar.create
-                (TopAppBar.Anatomy
-                    { actions = []
-                    , background = TopAppBar.Color (RGB 255 255 255)
-                    , bar = Height TopAppBar.Regular
-                    , navigation = Just Menu
-                    , overflow = False
-                    , title = Title "Hello World"
-                    }
-                )
-                (TopAppBar.Behavior
-                    { elevation = Above
-                    , scrolling = Stay
-                    }
-                )
-    , style = Material.Theme.defaultStyle
-    , device = defaultDevice
-    }
 
-    , Task.perform InitialViewport getViewport 
+init : ( Model, Cmd Msg )
+init =
+    ( { bar =
+            AppBar.Both
+                (TopAppBar.create
+                    (TopAppBar.Anatomy
+                        { actions = []
+                        , background = TopAppBar.Color (RGB 255 255 255)
+                        , bar = Height TopAppBar.Regular
+                        , navigation = Just Menu
+                        , overflow = False
+                        , title = Title "Hello World2"
+                        }
+                    )
+                    (TopAppBar.Behavior
+                        { elevation = Above
+                        , scrolling = Stay
+                        }
+                    )
+                )
+                (BottomAppBar.create
+                    (BottomAppBar.Anatomy {
+                        navigation= Nothing,
+                        fab = Nothing,
+                        actions = [],
+                        overflow = False
+                        , background = BottomAppBar.Color (Element.rgb255 255 255 255)
+                    })
+                    (BottomAppBar.Behavior{
+                        scrolling = BottomAppBar.Stay,
+                        elevation = BottomAppBar.Above
+                    })
+                )
+      , style = Material.Theme.defaultStyle
+      , device = defaultDevice
+      }
+    , Task.perform InitialViewport getViewport
     )
+
 
 defaultDevice : Element.Device
 defaultDevice =
-    {
-        class = Element.Desktop,
-        orientation = Element.Landscape
+    { class = Element.Desktop
+    , orientation = Element.Landscape
     }
+

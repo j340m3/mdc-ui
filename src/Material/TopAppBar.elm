@@ -1,6 +1,7 @@
-module Material.TopAppBar exposing (Anatomy(..), Background(..), Bar(..), BarHeight(..), Behavior(..), Color(..), ContextualActionBar(..), DesktopOnlyBarHeight(..), ElevationBehavior(..), Navigation(..), ScrollingBehavior(..), Title(..), TopAppBar, create, view)
+module Material.TopAppBar exposing (Msg, getHeight, Anatomy(..), Background(..), Bar(..), BarHeight(..), Behavior(..), Color(..), ContextualActionBar(..), DesktopOnlyBarHeight(..), ElevationBehavior(..), Navigation(..), ScrollingBehavior(..), Title(..), TopAppBar, create, view)
 
 import Element exposing (..)
+import Element.Input as Input
 import Element.Font as Font
 import Element.Background as Background
 import Element.Border as Border
@@ -9,6 +10,10 @@ import Internal.Icon exposing (Icon)
 import Internal.Image exposing (Image)
 import Material.Theme exposing (Style)
 
+type Msg =
+    MenuClicked
+    | BackClicked
+    | UpClicked
 
 type TopAppBar
     = TopAppBar
@@ -157,7 +162,7 @@ getBlankAnatomy appbar =
     |> .anatomy
     |> unwrap_Anatomy
 
-view : Style -> TopAppBar -> Element m
+view : Style -> TopAppBar -> Element Msg
 view style appbar =
     let
         height_len =
@@ -170,11 +175,11 @@ view style appbar =
             , Background.color style.color.primary
             , Border.shadow {offset = (0,0),size = 1, blur = 4, color = rgb 0 0 0}
             ]
-            [viewNavigation style (getBlankAnatomy appbar).navigation
+            [ viewNavigation style (getBlankAnatomy appbar).navigation
             , viewTitle style (getBlankAnatomy appbar).title
             , viewActions style (getBlankAnatomy appbar).actions (getBlankAnatomy appbar).overflow]
 
-viewNavigation : Style -> Maybe Navigation -> Element m
+viewNavigation : Style -> Maybe Navigation -> Element Msg
 viewNavigation style mb_nav =
     case mb_nav of
         Nothing -> 
@@ -185,9 +190,18 @@ viewNavigation style mb_nav =
                 ]
                 Element.none
         Just Menu -> 
-            el
-                [Font.color style.color.on_primary]
-                <| viewMaterialIcon "menu"
+            Input.button
+                [Font.color style.color.on_primary
+                , Background.color style.color.primary
+                , Border.rounded 56
+                , padding 16
+                , focused [ Border.shadow { offset = (0,0)
+                                          , size = 1
+                                          , blur = 4
+                                          , color = style.color.on_secondary}]
+                ]
+                {onPress = Just MenuClicked,
+                label = viewMaterialIcon "menu"}
         Just Up ->
             el
                 [Font.color style.color.on_primary]

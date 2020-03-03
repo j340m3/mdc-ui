@@ -48,7 +48,7 @@ type Background
 
 type Behavior
     = Behavior
-        { scolling : ScrollingBehavior
+        { scrolling : ScrollingBehavior
         , elevation : ElevationBehavior
         }
 
@@ -92,7 +92,18 @@ type ContextualActionBar
         , background : Color
         }
 
+create : Anatomy -> Behavior -> BottomAppBar
+create anatomy behavior =
+    BottomAppBar
+        { anatomy = anatomy
+        , behavior = behavior
+        }
 
 view : Style ->  BottomAppBar -> Element m
 view style appbar =
     text "Hello World"
+
+getHeight : BottomAppBar -> Int
+getHeight appbar =
+    16    
+
